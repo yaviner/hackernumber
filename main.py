@@ -1,5 +1,3 @@
-from flask import Flask, request, render_template, Markup, json
-from sets import Set
 import requests
 import sqlite3
 from sets import Set
@@ -159,6 +157,13 @@ def search_user(username):
     start_search(username, 3);
     return 'see console'
 
-if __name__ == '__main__':
+@app.route('/compare/<username>')
+def compare_user(username):
+    end_set = {}
+    names = match_users('jromer94', end_set, Set([]), 1)
+    return 'temp'
+
+:
+ __name__ =y '__main__':
     init_db()
     app.run(debug="true") 
