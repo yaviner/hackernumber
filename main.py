@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, Markup, json
+from flask import Response, Flask, request, render_template, Markup, json
 import requests
 import sqlite3
 from sets import Set
@@ -7,8 +7,8 @@ from sets import Set
 app = Flask(__name__)
 
 def match_users(user, user_dict, repo_set, level, repo_dict):
-    payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
-    payload2 = {'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
+    payload = {'type': 'all', 'access_token': '62932035644e919758860096cdbd7638592eeb6b'}
+    payload2 = {'access_token': '62932035644e919758860096cdbd7638592eeb6b'}
     
     r = requests.get('https://api.github.com/users/' + user + '/repos', params=payload)
     if not r.status_code == requests.codes.ok:
@@ -176,7 +176,7 @@ def get_user_chain(search_user):
         data = {}
         data["user"] = next_user
         data["repo"] = connecting_repo
-        user_chain.append(data)
+        user_chain.insert(0,data)
 
         print next_user, connecting_repo
         curr_user = next_user
@@ -212,18 +212,21 @@ def search_user(username):
 
 @app.route('/compare/<username>')
 def compare_user(username):
-    if user_in_db(username):
+    if is_user_in_db(username):
 
-        chain = chain = get_user_chain(username)
+        chain = get_user_chain(username)
         return Response(json.dumps(chain),  mimetype='application/json')
 
     end_set = {}
     repo_set = {}
-    match_users('jromer94', end_set, Set([]), 1, repo_set)
-    person
+    print end_set
+    print repo_set
+    match_users(username, end_set, Set([]), 1, repo_set)
+
+    person = None
     chain = None
     for user in end_set: 
-        if user_in_db(user):
+        if is_user_in_db(user):
             chain = get_user_chain(user)
             person = user
             break
@@ -235,7 +238,7 @@ def compare_user(username):
         data['repo'] = repo_set[person]
         chain.append(data)
 
-        if prev != username
+        if prev != username:
            data2 = {}
            data['repo'] = repo_set[prev] 
            data['user'] = username
