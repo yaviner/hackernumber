@@ -162,6 +162,8 @@ def get_user_chain(search_user):
     db_conn = sqlite3.connect('example.db')
     db_cursor = db_conn.cursor()
     
+    user_chain = []
+
     curr_user = search_user
     while (curr_user != 'theycallmeswift'):
         db_cursor.execute('''
@@ -170,13 +172,19 @@ def get_user_chain(search_user):
         row = db_cursor.fetchone()
         next_user = row[from_user_index]
         connecting_repo = row[repo_url_index]
+
+        data = {}
+        data["user"] = next_user
+        data["repo"] = connecting_repo
+        user_chain.append(data)
+
         print next_user, connecting_repo
         curr_user = next_user
 
 
     db_conn.commit()
     db_conn.close()
-    return
+    return user_chain
 
 
 
@@ -202,6 +210,8 @@ def search_user(username):
 
 if __name__ == '__main__':
     init_db()
-    #get_user_chain("samuelreh");
-    is_user_in_db("samuelreh")
+    if (is_user_in_db("samuelreh")):
+        print get_user_chain("samuelreh");
+    else:
+        print "not found"
     app.run(debug="true") 
