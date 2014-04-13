@@ -25,7 +25,7 @@
       <div class="site-wrapper-inner">
 
         <div class="cover-container">
-
+        <!--
           <div class="masthead clearfix">
             <div class="inner">
               <h3 class="masthead-brand"></h3>
@@ -35,17 +35,21 @@
               </ul>
             </div>
           </div>
-
+			-->
           <div class="inner cover" id="top-area">
            <h1 class="cover-heading big">Swift Number</h1>
-            <p class="lead">Not an actor or a mathematician? We understand. But you hack, right? Right? Well, you too can have a number. Introducing Swift Number. Find your degrees of separation from Mike Swift.</p>
+            <p class="lead">Legend has it that by six or fewer repositories of separation, every hacker is connected to Mike Swift, possibly making him the center of the universe. Prove that he isn’t:</p>
             <p class="lead">
-            	<input type="text" class="form-control main-input" placeholder="enter your github username">
+            	<input type="text" class="form-control main-input" id="main-input" placeholder="enter your github username">
 	            <a href="#" class="btn btn-sm btn-primary" id="trigger-button">Crunchitize me, cap'n</a>
             </p>
           </div>
           <div class="inner" id="results-wrap">
-          	<img src="/static/img/ajax-loader.gif" style="display: none;" id="loading-gif">
+          	<img src="/static/img/ajax-loader.gif" class="loadgif" id="loading-gif">
+          	<div id="returnResults">
+          	</div>
+          	<div id="answer">
+          	</div>
           </div>
 
           <div class="mastfoot">
