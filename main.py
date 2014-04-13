@@ -34,42 +34,46 @@ def get_related_users(user):
     user_repos_raw = r.json()
     user_repos = {}
 
-    for repos in user_repos_raw:
-        user_repos[repos['full_name']] = repos['contributors_url']
-
     users = Set([])
-
-    for repos in user_repos.values(): 
-        print repos
-        q = requests.get(repos, params=payload2)
-        try:
-            users_raw = q.json()
-            for person in users_raw:
-                users.add(person['login'])
-                # users[person['login']] = 'true' 
-        except ValueError:
-            print "shit.. didnt work"
-            print q
-
+    
+    try:
+        for repos in user_repos_raw:
+            user_repos[repos['full_name']] = repos['contributors_url']
+        for repos in user_repos.values(): 
+            #print repos
+            q = requests.get(repos, params=payload2)
+            try:
+                users_raw = q.json()
+                for person in users_raw:
+                    users.add(person['login'])
+                    # users[person['login']] = 'true' 
+            except Exception:
+                continue
+    except Exception:
+        return users
+        
     return users
 
 # user is a string of username
 # already_searched is a set containing users that have already been searched. 
 # levels left is a number that starts at the max level reach
-def user_bfs(user, already_searched, levels_left):
-    if levels_left == 0:
+def user_bfs(user, already_searched, current_level, max_level):
+    if current_level >= max_level:
         return
     elif not user in already_searched: 
         already_searched.add(user)
         related_user_set = get_related_users(user)
         print related_user_set
         for rel_user in related_user_set:
-            rem_levels = levels_left - 1
-            print '%s -> %s (%d)' %(user, rel_user, levels_left)
-            user_bfs(rel_user, already_searched, rem_levels)
+            print '%s -> %s (%d)' %(user, rel_user, current_level)
+            new_level = current_level + 1
+            user_bfs(rel_user, already_searched, new_level, max_level)
     else:
         return
 
+def start_search(user, max_levels):
+    searched_users = Set([])
+    user_bfs(user, searched_users, 0, max_levels);
 
 
 
@@ -84,9 +88,7 @@ def show_user(username):
 
 @app.route('/search/<username>')
 def search_user(username):
-    searched_users = Set([])
-    max_levels = 2
-    user_bfs(username, searched_users, max_levels);
+    start_search(username, 3);
     return 'see console'
 
 if __name__ == '__main__':
