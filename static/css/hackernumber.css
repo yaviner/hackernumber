@@ -6,3 +6,66 @@
 	vertical-align: top;
 	width: 350px;
 }
+.loadgif{
+	display: none;
+	margin-bottom: 20px;
+}
+.results-wrap{
+}
+.result{
+	display: inline-block;
+	vertical-align: middle;
+	text-align: center;
+	width: 150px;
+	font-size: 30px;
+	position: relative;
+}
+.result-name{
+	font-size: 30px;
+	color: #fff;
+}
+.result-repo{
+	font-size: 18px;
+	color: #3276b1;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+.result-repo::after, .result-repo::before{
+	content: "::";
+	display: block;
+	position: absolute;
+	top: 0px;
+	right: -2px;
+	color: #3276b1;
+}
+.result-repo::before{
+	right: auto;
+	left: -2px;
+}
+.isSwift{
+	color: #d38027;
+}
+.lead{
+	width: 700px;
+	margin: 0 auto;
+	display: block;
+	margin-bottom: 15px;
+}
+#answer{
+	display:block;
+	margin-top: 35px;
+}
+#answer-number{
+	display:inline-block;
+	vertical-align: middle;
+	width: 150px;
+	font-size: 140px;
+	color: #3276b1;
+}
+#answer-text{
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 24px;
+	width: 400px;
+
+}
