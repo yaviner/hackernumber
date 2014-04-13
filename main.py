@@ -1,3 +1,4 @@
+from flask import Flask, request, render_template, Markup, json
 import requests
 import sqlite3
 from sets import Set
@@ -5,7 +6,7 @@ from sets import Set
 
 app = Flask(__name__)
 
-def match_users(user, user_dict, repo_set, level):
+def match_users(user, user_dict, repo_set, level, repo_dict):
     payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
     payload2 = {'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
     
@@ -26,10 +27,10 @@ def match_users(user, user_dict, repo_set, level):
 
     users = Set([])
 
-    for repos in user_repos.values(): 
+    for repos, url in user_repos.iteritems(): 
         try:
             print repos
-            q = requests.get(repos, params=payload2)
+            q = requests.get(url, params=payload2)
             users_raw = q.json()
             if not r.status_code == requests.codes.ok:
                 print r.status_code
@@ -39,10 +40,11 @@ def match_users(user, user_dict, repo_set, level):
         for person in users_raw:
             if not user_dict.has_key(person['login']):
                 users.add(person['login']) 
-                user_dict[person['login']] = level
+                user_dict[person['login']] = user
+                repo_dict[person['login']] = repos
     for person in users:
        if level < 2:
-           match_users(person, user_dict, repo_set, level + 1)
+           match_users(person, user_dict, repo_set, level + 1, repo_dict)
     return
 
 def get_related_users(user):
@@ -193,8 +195,10 @@ def get_user_chain(search_user):
 @app.route('/')
 def hello_world():
     end_set = {}
-    names = match_users('jromer94', end_set, Set([]), 1)
+    repo_set = {}
+    names = match_users('yaviner', end_set, Set([]), 1, repo_set)
     print end_set
+    print repo_set
     return 'names'
 
 @app.route('/user/<username>')
@@ -208,12 +212,42 @@ def search_user(username):
 
 @app.route('/compare/<username>')
 def compare_user(username):
-    end_set = {}
-    names = match_users('jromer94', end_set, Set([]), 1)
-    return 'temp'
+    if user_in_db(username):
 
-:
- __name__ =y '__main__':
+        chain = chain = get_user_chain(username)
+        return Response(json.dumps(chain),  mimetype='application/json')
+
+    end_set = {}
+    repo_set = {}
+    match_users('jromer94', end_set, Set([]), 1, repo_set)
+    person
+    chain = None
+    for user in end_set: 
+        if user_in_db(user):
+            chain = get_user_chain(user)
+            person = user
+            break
+    if chain:
+
+        prev = end_set[person] 
+        data = {}
+        data['user'] = prev
+        data['repo'] = repo_set[person]
+        chain.append(data)
+
+        if prev != username
+           data2 = {}
+           data['repo'] = repo_set[prev] 
+           data['user'] = username
+           chain.append(data2)
+
+        
+    else:
+        chain = []
+
+    return Response(json.dumps(chain),  mimetype='application/json')
+
+if __name__ == '__main__':
     init_db()
     if (is_user_in_db("samuelreh")):
         print get_user_chain("samuelreh");
