@@ -2,34 +2,50 @@ from flask import Flask, request, render_template, Markup, json
 from sets import Set
 import requests
 import sqlite3
-
-
+from sets import Set
 
 
 app = Flask(__name__)
 
-def match_users(user, target):
+def match_users(user, user_dict, repo_set, level):
     payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
     payload2 = {'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
+    
     r = requests.get('https://api.github.com/users/' + user + '/repos', params=payload)
+    if not r.status_code == requests.codes.ok:
+        print r.status_code
+        return False
+
     user_repos_raw = r.json()
+
     user_repos = {}
 
     for repos in user_repos_raw:
-        user_repos[repos['full_name']] = repos['contributors_url']
+        if repos['full_name'] not in repo_set:
+            user_repos[repos['full_name']] = repos['contributors_url']
+            repo_set.add(repos['full_name'])
 
-    users = {}
+
+    users = Set([])
 
     for repos in user_repos.values(): 
-        print repos
-        q = requests.get(repos, params=payload2)
-        users_raw = q.json()
+        try:
+            print repos
+            q = requests.get(repos, params=payload2)
+            users_raw = q.json()
+            if not r.status_code == requests.codes.ok:
+                print r.status_code
+                continue
+        except Exception as inst:
+            continue;
         for person in users_raw:
-            users[person['login']] = 'true' 
-    if users.has_key(target):
-        return target 
-
-    return 'null'
+            if not user_dict.has_key(person['login']):
+                users.add(person['login']) 
+                user_dict[person['login']] = level
+    for person in users:
+       if level < 2:
+           match_users(person, user_dict, repo_set, level + 1)
+    return
 
 def get_related_users(user):
     payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
@@ -129,7 +145,9 @@ def insert_conn_row(from_user, to_user, repo_url, conn_distance):
 #############
 @app.route('/')
 def hello_world():
-    names = match_users('jromer94', 'adispen')
+    end_set = {}
+    names = match_users('jromer94', end_set, Set([]), 1)
+    print end_set
     return 'names'
 
 @app.route('/user/<username>')
