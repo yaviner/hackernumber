@@ -194,7 +194,10 @@ def get_user_chain(search_user):
 #############
 @app.route('/')
 def hello_world():
-    return render_template('index.html')
+    end_set = {}
+    names = match_users('jromer94', end_set, Set([]), 1)
+    print end_set
+    return 'names'
 
 @app.route('/user/<username>')
 def show_user(username):
@@ -204,20 +207,6 @@ def show_user(username):
 def search_user(username):
     start_search(username, 3);
     return 'see console'
-
-@app.route('/test')
-def test():
-   	return '''[
-			{
-				user: "yaviner",
-				repo: "pokerama"
-			},
-			{
-				user: "jromer94",
-				repo: "hackernumber"
-			}
-		]
-   	'''
 
 if __name__ == '__main__':
     init_db()
