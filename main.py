@@ -101,7 +101,13 @@ def start_search(user, max_levels):
 ##############
 #  DB stuff  #
 ##############
+
 conn_table = 'github_connections'
+from_user_index = 0
+to_user_index = 1
+repo_url_index = 2
+conn_distance_index = 3
+
 def init_db():
     db_conn = sqlite3.connect('example.db')
     db_cursor = db_conn.cursor()
@@ -134,6 +140,49 @@ def insert_conn_row(from_user, to_user, repo_url, conn_distance):
     db_conn.close()
     return 
 
+def is_user_in_db(search_user):
+    db_conn = sqlite3.connect('example.db')
+    db_cursor = db_conn.cursor()
+    
+    db_cursor.execute('''
+        SELECT * FROM github_connections WHERE to_user = '%s';
+    ''' %(search_user))
+    row = db_cursor.fetchone()
+    result = False
+    if (row):
+        result = True
+    
+    db_conn.commit()
+    db_conn.close()
+    return result
+
+def get_user_chain(search_user):
+    db_conn = sqlite3.connect('example.db')
+    db_cursor = db_conn.cursor()
+    
+    user_chain = []
+
+    curr_user = search_user
+    while (curr_user != 'theycallmeswift'):
+        db_cursor.execute('''
+            SELECT * FROM github_connections WHERE to_user = '%s';
+        ''' %(curr_user))
+        row = db_cursor.fetchone()
+        next_user = row[from_user_index]
+        connecting_repo = row[repo_url_index]
+
+        data = {}
+        data["user"] = next_user
+        data["repo"] = connecting_repo
+        user_chain.append(data)
+
+        print next_user, connecting_repo
+        curr_user = next_user
+
+
+    db_conn.commit()
+    db_conn.close()
+    return user_chain
 
 
 
@@ -166,4 +215,8 @@ def compare_user(username):
 :
  __name__ =y '__main__':
     init_db()
+    if (is_user_in_db("samuelreh")):
+        print get_user_chain("samuelreh");
+    else:
+        print "not found"
     app.run(debug="true") 
