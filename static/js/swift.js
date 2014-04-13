@@ -2,8 +2,26 @@ $(document).ready(function(){
 	$('#trigger-button').click(function(){
 		$('#top-area').animate({marginTop: '-300px'}, 1000).promise(showLoading());
 		var username = $('#main-input').val();
-		console.log(username);
-		var mock = [
+		if(username == 'theycallmeswift'){
+			var swiftAnswer = "<div id='answer-number'>0</div>";
+			swiftAnswer += "<div id='answer-text'>At your service, Mr. Gosling.</div>";
+			$('#answer').append(swiftAnswer);
+		}else{
+			var loc = "/compare"+username;
+			doAjax(username);
+		}
+	});
+});
+
+function doAjax(username){
+	var blah = $.ajax({
+				dataType: "json",
+				url: "/test",
+				type: "GET",
+				async: false
+			}).responseText;
+	var str = "var x = " + blah;
+	var blah2 = [
 			{
 				user: "yaviner",
 				repo: "pokerama"
@@ -12,28 +30,28 @@ $(document).ready(function(){
 				user: "jromer94",
 				repo: "hackernumber"
 			}
-		];
-		if(username == 'theycallmeswift'){
-			var swiftAnswer = "<div id='answer-number'>0</div>";
-			swiftAnswer += "<div id='answer-text'>At your service, Mr. Gosling.</div>";
-			$('#answer').append(swiftAnswer);
-		}else{
-			$.each(mock, function(index, value){
-				if(index == mock.length-1){
-					var appended = "<div class='result-name result isSwift'>"+this.user+"</div>";
-				}else{
-					var appended = "<div class='result-name result'>"+this.user+"</div>";
-					appended += "<div class='result-repo result'>"+this.repo+"</div>";
-				}
-				$('#returnResults').append(appended);
-			});
-			determineSwiftNumber(mock);
-		}
-	});
-});
+		]
+	eval(str);
+	parse(x);
 
+}
 function showLoading(){
 	$('#loading-gif').show(1500);
+}
+
+function parse(mock){
+	console.log("hey");
+	$.each(mock, function(index, value){
+		if(index == mock.length-1){
+			var appended = "<div class='result-name result isSwift'>"+this.user+"</div>";
+		}else{
+			var appended = "<div class='result-name result'>"+this.user+"</div>";
+			appended += "<div class='result-repo result'>"+this.repo+"</div>";
+		}
+		$('#returnResults').append(appended);
+	});
+	determineSwiftNumber(mock);
+	$('#loading-gif').hide(1500);
 }
 
 function determineSwiftNumber(mock){

@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 from flask import Response, Flask, request, render_template, Markup, json
+=======
+from flask import Flask, request, render_template, Markup, json
+from sets import Set
+>>>>>>> d54154a97208c7aea57a2258d585b1ebf075ee58
 import requests
 import sqlite3
 from sets import Set
@@ -27,10 +32,10 @@ def match_users(user, user_dict, repo_set, level, repo_dict):
 
     users = Set([])
 
-    for repos, url in user_repos.iteritems(): 
+    for repos in user_repos.values(): 
         try:
             print repos
-            q = requests.get(url, params=payload2)
+            q = requests.get(repos, params=payload2)
             users_raw = q.json()
             if not r.status_code == requests.codes.ok:
                 print r.status_code
@@ -40,11 +45,10 @@ def match_users(user, user_dict, repo_set, level, repo_dict):
         for person in users_raw:
             if not user_dict.has_key(person['login']):
                 users.add(person['login']) 
-                user_dict[person['login']] = user
-                repo_dict[person['login']] = repos
+                user_dict[person['login']] = level
     for person in users:
        if level < 2:
-           match_users(person, user_dict, repo_set, level + 1, repo_dict)
+           match_users(person, user_dict, repo_set, level + 1)
     return
 
 def get_related_users(user):
@@ -195,10 +199,8 @@ def get_user_chain(search_user):
 @app.route('/')
 def hello_world():
     end_set = {}
-    repo_set = {}
-    names = match_users('yaviner', end_set, Set([]), 1, repo_set)
+    names = match_users('jromer94', end_set, Set([]), 1)
     print end_set
-    print repo_set
     return 'names'
 
 @app.route('/user/<username>')
