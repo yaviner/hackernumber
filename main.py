@@ -51,9 +51,13 @@ def match_users(user, user_dict, repo_set, level, repo_dict):
            match_users(person, user_dict, repo_set, level + 1)
     return
 
+access_token = '7b5e948bbb33a71fa7842b970b835a6717b28050'
+_global = {}
+_global["access_token"] = '7b5e948bbb33a71fa7842b970b835a6717b28050'
+
 def get_related_users(user):
-    payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
-    payload2 = {'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
+    payload = {'type': 'all', 'access_token': _global["access_token"]}
+    payload2 = {'access_token': _global["access_token"]}
     r = requests.get('https://api.github.com/users/' + user + '/repos', params=payload)
     user_repos_raw = r.json()
     user_repos = {}
@@ -77,6 +81,8 @@ def get_related_users(user):
             except Exception:
                 continue
     except Exception:
+        new_access_token = raw_input("*** Please enter new access_token ***");
+        _global["access_token"] = new_access_token
         return users_with_repo
 
     return users_with_repo
@@ -90,7 +96,7 @@ def user_bfs(user, already_searched, current_level, max_level):
     elif not user in already_searched: 
         already_searched.add(user)
         related_user_set = get_related_users(user)
-        print related_user_set
+        # print related_user_set
         for rel_user in related_user_set:
             repo_url = related_user_set[rel_user]
             insert_conn_row(user, rel_user, repo_url, (current_level+1))
@@ -141,7 +147,7 @@ def insert_conn_row(from_user, to_user, repo_url, conn_distance):
         (from_user, to_user, repo_url, conn_distance)
         VALUES ('%s', '%s', '%s', '%s');
     ''' %(from_user, to_user, repo_url, conn_distance))
-    print '%s -> %s (%d) [%s]' %(from_user, to_user, (conn_distance+1), repo_url)
+    print '%s -> %s (%d) [%s]' %(from_user, to_user, conn_distance, repo_url)
     db_conn.commit()
     db_conn.close()
     return 
@@ -254,8 +260,8 @@ def compare_user(username):
 
 if __name__ == '__main__':
     init_db()
-    if (is_user_in_db("samuelreh")):
-        print get_user_chain("samuelreh");
-    else:
-        print "not found"
+    # if (is_user_in_db("samuelreh")):
+    #     print get_user_chain("samuelreh");
+    # else:
+    #     print "not found"
     app.run(debug="true") 
