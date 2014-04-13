@@ -1,6 +1,10 @@
 from flask import Flask, request, render_template, Markup, json
 from sets import Set
 import requests
+import sqlite3
+
+
+
 
 app = Flask(__name__)
 
@@ -34,8 +38,10 @@ def get_related_users(user):
     user_repos_raw = r.json()
     user_repos = {}
 
-    users = Set([])
+    #users = Set([])
     
+    users_with_repo = {}
+
     try:
         for repos in user_repos_raw:
             user_repos[repos['full_name']] = repos['contributors_url']
@@ -45,14 +51,15 @@ def get_related_users(user):
             try:
                 users_raw = q.json()
                 for person in users_raw:
-                    users.add(person['login'])
+                    #users.add(person['login'])
+                    users_with_repo[person['login']] = repos
                     # users[person['login']] = 'true' 
             except Exception:
                 continue
     except Exception:
-        return users
-        
-    return users
+        return users_with_repo
+
+    return users_with_repo
 
 # user is a string of username
 # already_searched is a set containing users that have already been searched. 
@@ -65,18 +72,61 @@ def user_bfs(user, already_searched, current_level, max_level):
         related_user_set = get_related_users(user)
         print related_user_set
         for rel_user in related_user_set:
-            print '%s -> %s (%d)' %(user, rel_user, current_level)
+            repo_url = related_user_set[rel_user]
+            insert_conn_row(user, rel_user, repo_url, (current_level+1))
             new_level = current_level + 1
             user_bfs(rel_user, already_searched, new_level, max_level)
     else:
         return
 
+
 def start_search(user, max_levels):
     searched_users = Set([])
     user_bfs(user, searched_users, 0, max_levels);
 
+##############
+#  DB stuff  #
+##############
+conn_table = 'github_connections'
+def init_db():
+    db_conn = sqlite3.connect('example.db')
+    db_cursor = db_conn.cursor()
+    res = db_cursor.execute('''
+        CREATE TABLE IF NOT EXISTS
+            github_connections
+        (
+            from_user TEXT,
+            to_user TEXT,
+            repo_url TEXT,
+            conn_distance INTEGER
+        );
+    ''')
+    print res
+    print "created db with table `github_connections`"
+    db_conn.commit()
+    db_conn.close()
+    return
+
+def insert_conn_row(from_user, to_user, repo_url, conn_distance):
+    db_conn = sqlite3.connect('example.db')
+    db_cursor = db_conn.cursor()
+    db_cursor.execute('''
+        INSERT INTO github_connections 
+        (from_user, to_user, repo_url, conn_distance)
+        VALUES ('%s', '%s', '%s', '%s');
+    ''' %(from_user, to_user, repo_url, conn_distance))
+    print '%s -> %s (%d) [%s]' %(from_user, to_user, (conn_distance+1), repo_url)
+    db_conn.commit()
+    db_conn.close()
+    return 
 
 
+
+
+
+#############
+#  Routing  #
+#############
 @app.route('/')
 def hello_world():
     names = match_users('jromer94', 'adispen')
@@ -92,4 +142,5 @@ def search_user(username):
     return 'see console'
 
 if __name__ == '__main__':
+    init_db()
     app.run(debug="true") 
