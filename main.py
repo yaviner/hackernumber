@@ -5,7 +5,7 @@ from sets import Set
 
 app = Flask(__name__)
 
-def match_users(user, target, user_set, repo_set, level, degree_list):
+def match_users(user, user_dict, repo_set, level):
     payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
     payload2 = {'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
     
@@ -37,18 +37,13 @@ def match_users(user, target, user_set, repo_set, level, degree_list):
         except Exception as inst:
             continue;
         for person in users_raw:
-            if person['login'] not in user_set:
+            if not user_dict.has_key(person['login']):
                 users.add(person['login']) 
-                user_set.add(person['login'])
-    if target in users:
-        degree_list.append(target)
-        return True
+                user_dict[person['login']] = level
     for person in users:
-       if  level < 3 and match_users(person, target, user_set, repo_set, level + 1, degree_list):
-           degree_list.append(person)
-           return True
-
-    return False
+       if level < 2:
+           match_users(person, user_dict, repo_set, level + 1)
+    return
 
 def get_related_users(user):
     payload = {'type': 'all', 'access_token': '7b5e948bbb33a71fa7842b970b835a6717b28050'}
@@ -98,8 +93,8 @@ def user_bfs(user, already_searched, levels_left):
 
 @app.route('/')
 def hello_world():
-    end_set = []
-    names = match_users('jromer94', 'sagnew', Set([]), Set([]), 1, end_set)
+    end_set = {}
+    names = match_users('jromer94', end_set, Set([]), 1)
     print end_set
     return 'names'
 
